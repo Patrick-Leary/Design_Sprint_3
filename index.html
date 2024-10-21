@@ -1,51 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>A-Frame Shooting Game with Explosions</title>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/particles/ParticleSystem.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ball Throwing Game</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.3.0/dist/aframe-physics-system.min.js"></script>
 </head>
 <body>
-    <button id="myEnterVRButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">Enter VR</button>
-
-    <a-scene vr-mode-ui="enabled: true" xr-mode-ui="enterVRButton: #myEnterVRButton;">
-        <a-entity id="spheres">
-            <a-sphere shootable explosion position="-1 1 -3" radius="0.5" color="red"></a-sphere>
-            <a-sphere shootable explosion position="1 2 -4" radius="0.5" color="blue"></a-sphere>
-            <a-sphere shootable explosion position="0 1.5 -5" radius="0.5" color="green"></a-sphere>
+    <a-scene physics="gravity: -9.8">
+        <!-- Camera and Controls -->
+        <a-entity id="player" camera wasd-controls look-controls position="0 1.6 0">
+            <!-- Crosshair for aiming -->
+            <a-entity cursor="fuse: false; rayOrigin: mouse" position="0 0 -1.5"
+                      geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                      material="color: black; shader: flat"></a-entity>
         </a-entity>
-        <a-camera position="0 1.6 0">
-            <a-cursor></a-cursor>
-        </a-camera>
-        <a-sky color="#ECECEC"></a-sky>
-    </a-scene>
-    <script>
-        AFRAME.registerComponent('shootable', {
-            init: function () {
-                var el = this.el;
-                el.addEventListener('click', function () {
-                    el.setAttribute('visible', false);
-                    console.log('Sphere shot!');
-                });
-            }
-        });
 
-        AFRAME.registerComponent('explosion', {
-            init: function () {
-                var el = this.el;
-                el.addEventListener('click', function () {
-                    var explosion = document.createElement('a-entity');
-                    explosion.setAttribute('geometry', {primitive: 'sphere', radius: 0.02});
-                    explosion.setAttribute('material', {color: 'orange'});
-                    explosion.setAttribute('position', el.getAttribute('position'));
-                    explosion.setAttribute('animation', 'property: scale; to: 2 2 2; dur: 300;');
-                    explosion.setAttribute('visible', true);
-                    el.sceneEl.appendChild(explosion);
-                    setTimeout(function() { explosion.parentNode.removeChild(explosion); }, 300);
-                });
+        <!-- Ground -->
+        <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" static-body></a-plane>
+
+        <!-- Sky -->
+        <a-sky color="#ECECEC"></a-sky>
+
+        <!-- Balls floating around -->
+        <a-entity id="balls"></a-entity>
+
+        <!-- Script to handle the game mechanics -->
+        <script>
+            // Function to spawn floating balls
+            function spawnBalls() {
+                let balls = document.getElementById('balls');
+                for (let i = 0; i < 5; i++) {
+                    let ball = document.createElement('a-sphere');
+                    ball.setAttribute('position', `${Math.random() * 10 - 5} ${Math.random() * 5 + 1} ${Math.random() * -5 - 3}`);
+                    ball.setAttribute('radius', '0.5');
+                    ball.setAttribute('color', '#EF2D5E');
+                    ball.setAttribute('dynamic-body', ''); // Allow the ball to interact with physics
+                    ball.classList.add('ball'); // Add class for easy reference
+
+                    // Add a click listener to make the ball disappear when clicked
+                    ball.addEventListener('click', function () {
+                        this.parentNode.removeChild(this); // Remove ball when clicked
+                        hits++;
+                        if (hits === totalBalls) {
+                            let timeTaken = Math.round((Date.now() - startTime) / 1000);
+                            alert(`You clicked all the balls! Time: ${timeTaken}s`);
+                        }
+                    });
+
+                    balls.appendChild(ball);
+                }
             }
-        });
-    </script>
+
+            // Initialize the game by spawning balls
+            let hits = 0;
+            let totalBalls = 5;
+            let startTime = Date.now();
+            spawnBalls();
+
+            // Function to throw the object
+            document.addEventListener('click', function () {
+                let camera = document.getElementById('player');
+                let direction = new THREE.Vector3();
+                camera.object3D.getWorldDirection(direction);
+
+                // Create a new throwable object (box)
+                let throwable = document.createElement('a-box');
+                throwable.setAttribute('position', camera.getAttribute('position'));
+                throwable.setAttribute('depth', '0.1');
+                throwable.setAttribute('height', '0.1');
+                throwable.setAttribute('width', '0.1');
+                throwable.setAttribute('color', '#FF0000');
+                throwable.setAttribute('dynamic-body', ''); // Enable physics on throwable
+
+                // Set velocity based on camera's facing direction
+                direction.multiplyScalar(-10); // Adjust the throw speed and direction
+                throwable.setAttribute('velocity', `${direction.x} ${direction.y} ${direction.z}`);
+
+                // Append the new throwable to the scene
+                document.querySelector('a-scene').appendChild(throwable);
+
+                // The throwable object will not remove the ball, it's just for visuals
+            });
+        </script>
+    </a-scene>
 </body>
 </html>
