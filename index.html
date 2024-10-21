@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shoot Sphere Game</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/rdub80/aframe-gui/master/dist/aframe-gui.min.js"></script>
     <script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.3.0/dist/aframe-physics-system.min.js"></script>
+    <script src="js/menuManager.js"></script>
+    <script src="js/ballManager.js"></script>
+    <script src="js/shootingMechanic.js"></script>
+    <script src="js/gameManager.js"></script>
+    <script src="js/main.js"></script>
 </head>
 <body>
     <a-scene physics="gravity: -9.8" vr-mode-ui="enabled: true">
@@ -25,68 +31,15 @@
 
         <!-- Balls floating around -->
         <a-entity id="balls"></a-entity>
-
-        <!-- Script to handle the game mechanics -->
-        <script>
-            // Function to spawn floating balls
-            function spawnBalls() {
-                let balls = document.getElementById('balls');
-                for (let i = 0; i < 5; i++) {
-                    let ball = document.createElement('a-sphere');
-                    ball.setAttribute('position', `${Math.random() * 10 - 5} ${Math.random() * 5 + 1} ${Math.random() * -5 - 3}`);
-                    ball.setAttribute('radius', '0.5');
-                    ball.setAttribute('color', '#EF2D5E');
-                    ball.setAttribute('dynamic-body', ''); // Allow the ball to interact with physics
-                    ball.classList.add('ball'); // Add class for easy reference
-                    balls.appendChild(ball);
-                }
-            }
-
-            // Initialize the game by spawning balls
-            let hits = 0;
-            let totalBalls = 5;
-            let startTime = Date.now();
-            spawnBalls();
-
-            // Function to handle sphere shooting
-            function shootSphere(event) {
-                let camera = document.getElementById('player');
-                let raycaster = camera.components.raycaster;
-                let intersections = raycaster.intersections;
-
-                if (intersections.length > 0) {
-                    let hitBall = intersections[0].object.el;
-                    if (hitBall.classList.contains('ball')) {
-                        hitBall.parentNode.removeChild(hitBall);
-                        hits++;
-                        if (hits === totalBalls) {
-                            let timeTaken = Math.round((Date.now() - startTime) / 1000);
-                            alert(`You shot all the balls! Time: ${timeTaken}s`);
-                        }
-                    }
-                }
-
-                // Throw object logic
-                let direction = new THREE.Vector3();
-                camera.object3D.getWorldDirection(direction);
-
-                let throwable = document.createElement('a-box');
-                throwable.setAttribute('position', camera.getAttribute('position'));
-                throwable.setAttribute('depth', '0.1');
-                throwable.setAttribute('height', '0.1');
-                throwable.setAttribute('width', '0.1');
-                throwable.setAttribute('color', '#FF0000');
-                throwable.setAttribute('dynamic-body', '');
-
-                direction.multiplyScalar(-10);
-                throwable.setAttribute('velocity', `${direction.x} ${direction.y} ${direction.z}`);
-
-                document.querySelector('a-scene').appendChild(throwable);
-            }
-
-            // Add click event listener to the scene
-            document.querySelector('a-scene').addEventListener('click', shootSphere);
-        </script>
+        <a-entity id="cameraRig" position="0 1.6 0">
+            <a-camera look-controls wasd-controls position="0 0 0">
+                <a-gui-cursor id="cursor"
+                    raycaster="objects: [gui-interactable]"
+                    fuse="true" fuse-timeout="2000"
+                    design="ring">
+                </a-gui-cursor>
+            </a-camera>
+        </a-entity>
     </a-scene>
 </body>
 </html>
