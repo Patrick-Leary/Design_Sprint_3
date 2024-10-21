@@ -9,7 +9,7 @@
 <body>
     <button id="myEnterVRButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">Enter VR</button>
 
-    <a-scene xr-mode-ui="enterVRButton: #myEnterVRButton;">
+    <a-scene vr-mode-ui="enabled: true" xr-mode-ui="enterVRButton: #myEnterVRButton;">
         <a-entity id="spheres">
             <a-sphere shootable explosion position="-1 1 -3" radius="0.5" color="red"></a-sphere>
             <a-sphere shootable explosion position="1 2 -4" radius="0.5" color="blue"></a-sphere>
