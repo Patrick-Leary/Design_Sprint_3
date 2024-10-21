@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ball Throwing Game</title>
+    <title>Shoot Sphere Game</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.3.0/dist/aframe-physics-system.min.js"></script>
 </head>
 <body>
     <a-scene physics="gravity: -9.8" vr-mode-ui="enabled: true">
         <!-- Camera and Controls -->
-        <a-entity id="player" camera wasd-controls look-controls position="0 1.6 0">
+        <a-entity id="player" camera wasd-controls look-controls position="0 1.6 0" raycaster="objects: .ball; far: 100">
             <!-- Crosshair for aiming -->
             <a-entity cursor="fuse: false; rayOrigin: mouse" position="0 0 -1.5"
                       geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
@@ -38,17 +38,6 @@
                     ball.setAttribute('color', '#EF2D5E');
                     ball.setAttribute('dynamic-body', ''); // Allow the ball to interact with physics
                     ball.classList.add('ball'); // Add class for easy reference
-
-                    // Add a click listener to make the ball disappear when clicked
-                    ball.addEventListener('click', function () {
-                        this.parentNode.removeChild(this); // Remove ball when clicked
-                        hits++;
-                        if (hits === totalBalls) {
-                            let timeTaken = Math.round((Date.now() - startTime) / 1000);
-                            alert(`You clicked all the balls! Time: ${timeTaken}s`);
-                        }
-                    });
-
                     balls.appendChild(ball);
                 }
             }
@@ -59,30 +48,44 @@
             let startTime = Date.now();
             spawnBalls();
 
-            // Function to throw the object
-            document.addEventListener('click', function () {
+            // Function to handle sphere shooting
+            function shootSphere(event) {
                 let camera = document.getElementById('player');
+                let raycaster = camera.components.raycaster;
+                let intersections = raycaster.intersections;
+
+                if (intersections.length > 0) {
+                    let hitBall = intersections[0].object.el;
+                    if (hitBall.classList.contains('ball')) {
+                        hitBall.parentNode.removeChild(hitBall);
+                        hits++;
+                        if (hits === totalBalls) {
+                            let timeTaken = Math.round((Date.now() - startTime) / 1000);
+                            alert(`You shot all the balls! Time: ${timeTaken}s`);
+                        }
+                    }
+                }
+
+                // Throw object logic
                 let direction = new THREE.Vector3();
                 camera.object3D.getWorldDirection(direction);
 
-                // Create a new throwable object (box)
                 let throwable = document.createElement('a-box');
                 throwable.setAttribute('position', camera.getAttribute('position'));
                 throwable.setAttribute('depth', '0.1');
                 throwable.setAttribute('height', '0.1');
                 throwable.setAttribute('width', '0.1');
                 throwable.setAttribute('color', '#FF0000');
-                throwable.setAttribute('dynamic-body', ''); // Enable physics on throwable
+                throwable.setAttribute('dynamic-body', '');
 
-                // Set velocity based on camera's facing direction
-                direction.multiplyScalar(-10); // Adjust the throw speed and direction
+                direction.multiplyScalar(-10);
                 throwable.setAttribute('velocity', `${direction.x} ${direction.y} ${direction.z}`);
 
-                // Append the new throwable to the scene
                 document.querySelector('a-scene').appendChild(throwable);
+            }
 
-                // The throwable object will not remove the ball, it's just for visuals
-            });
+            // Add click event listener to the scene
+            document.querySelector('a-scene').addEventListener('click', shootSphere);
         </script>
     </a-scene>
 </body>
