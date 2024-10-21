@@ -15,20 +15,30 @@
 </head>
 <body>
     <a-scene physics="gravity: -9.8" vr-mode-ui="enabled: true">
-        <!-- Camera and Controls -->
+        <!-- Player and Camera -->
         <a-entity id="player" camera wasd-controls look-controls position="0 1.6 0" raycaster="objects: .ball; far: 100">
             <!-- Crosshair for aiming -->
             <a-entity cursor="fuse: false; rayOrigin: mouse" position="0 0 -1.5"
                       geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
                       material="color: black; shader: flat"></a-entity>
         </a-entity>
-
+    
+        <!-- Room structure -->
+        <a-box position="0 1 -5" depth="10" height="3" width="10" color="#8C8C8C" opacity="0.7"></a-box>
+        <a-box position="0 1 -15" depth="10" height="3" width="10" color="#8C8C8C" opacity="0.7"></a-box>
+    
         <!-- Ground -->
         <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" static-body></a-plane>
-
-        <!-- Sky -->
+    
+        <!-- Enhanced sky with light -->
         <a-sky color="#ECECEC"></a-sky>
-
+    
+        <!-- Lighting -->
+        <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
+        <a-light type="directional" position="1 3 -1" intensity="0.7" color="#ffffff"></a-light>
+        <a-light type="point" position="2 4 -2" intensity="1" distance="10" decay="2" color="#FFCC00"></a-light>
+        <a-light type="spot" position="0 4 -2" angle="45" intensity="0.8" color="#00CCFF" target="#balls"></a-light>
+        
         <!-- Balls floating around -->
         <a-entity id="balls"></a-entity>
         <a-entity id="cameraRig" position="0 1.6 0">
