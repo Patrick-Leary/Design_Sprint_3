@@ -3,51 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shoot Sphere Game</title>
+    <title>Design Sprint 3</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://rawgit.com/rdub80/aframe-gui/master/dist/aframe-gui.min.js"></script>
-    <script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.3.0/dist/aframe-physics-system.min.js"></script>
     <script src="js/menuManager.js"></script>
-    <script src="js/ballManager.js"></script>
-    <script src="js/shootingMechanic.js"></script>
     <script src="js/gameManager.js"></script>
     <script src="js/main.js"></script>
 </head>
 <body>
-    <a-scene physics="gravity: -9.8" vr-mode-ui="enabled: true">
-        <!-- Player and Camera -->
-        <a-entity id="player" camera wasd-controls look-controls position="0 1.6 0" raycaster="objects: .ball; far: 100">
-            <!-- Crosshair for aiming -->
-            <a-entity cursor="fuse: false; rayOrigin: mouse" position="0 0 -1.5"
-                      geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
-                      material="color: black; shader: flat"></a-entity>
-        </a-entity>
-    
-        <!-- Room structure -->
-        <a-box position="0 1 -5" depth="10" height="3" width="10" color="#8C8C8C" opacity="0.7"></a-box>
-        <a-box position="0 1 -15" depth="10" height="3" width="10" color="#8C8C8C" opacity="0.7"></a-box>
-    
-        <!-- Ground -->
-        <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" static-body></a-plane>
-    
-        <!-- Enhanced sky with light -->
-        <a-sky color="#ECECEC"></a-sky>
-    
-        <!-- Lighting -->
-        <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
-        <a-light type="directional" position="1 3 -1" intensity="0.7" color="#ffffff"></a-light>
-        <a-light type="point" position="2 4 -2" intensity="1" distance="10" decay="2" color="#FFCC00"></a-light>
-        <a-light type="spot" position="0 4 -2" angle="45" intensity="0.8" color="#00CCFF" target="#balls"></a-light>
+    <a-scene shadow="type: pcfsoft">
+        <!-- Room Structure -->
+        <!-- Walls (using planes) -->
+        <!-- Front wall -->
+        <a-plane shadow="receive: true" position="0 1.5 -10" width="20" height="3" color="#4A4A4A"></a-plane>
+
+        <!-- Back wall -->
+        <a-plane shadow="receive: true" position="0 1.5 5" rotation="180 0 0" width="20" height="3" color="#4A4A4A"></a-plane>
+
+        <!-- Right wall -->
+        <a-plane shadow="receive: true" position="10 1.5 -2.5" rotation="0 -90 0" width="15" height="3" color="#4A4A4A"></a-plane>
         
-        <!-- Balls floating around -->
-        <a-entity id="balls"></a-entity>
-        <a-entity id="cameraRig" position="0 1.6 0">
-            <a-camera look-controls wasd-controls position="0 0 0">
-                <a-gui-cursor id="cursor"
-                    raycaster="objects: [gui-interactable]"
-                    fuse="true" fuse-timeout="2000"
-                    design="ring">
-                </a-gui-cursor>
+        <!-- Left wall -->
+        <a-plane shadow="receive: true" position="-10 1.5 -2.5" rotation="0 90 0" width="15" height="3" color="#4A4A4A"></a-plane>
+        
+        <!-- Ceiling -->
+        <a-plane shadow="receive: true" position="0 3 -5" rotation="90 0 0" width="20" height="20" color="#363636"></a-plane>
+        
+        <!-- Floor -->
+        <a-plane shadow="receive: true" position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#2D2D2D"></a-plane>
+        
+        <!-- Lighting -->
+        <!-- Ambient light for base illumination -->
+        <a-light type="ambient" color="#2D1B3E" intensity="0.5"></a-light>
+        
+        <!-- Main purple ceiling lights -->
+        <a-light type="point" position="0 2.8 -5" rotation="-90 0 0" 
+                intensity="1" distance="15" angle="60" penumbra="0.4"
+                color="#9B4DCA" shadow="cast: true"></a-light>
+        
+        <!-- Orange accent lights -->
+        <a-light type="point" position="-5 2 -5" intensity="0.8" distance="8" 
+                color="#FF6B1A" shadow="cast: true"></a-light>
+        <a-light type="point" position="5 2 -5" intensity="0.8" distance="8" 
+                color="#FF6B1A" shadow="cast: true"></a-light>
+        
+
+        <!-- Environment -->
+        <a-sky color="#1A1A1A"></a-sky>
+        
+        <!-- Menus will be added here by menuManager -->
+        <a-entity id="menuContainer"></a-entity>
+
+        <!-- Camera -->
+        <a-entity position="0 0 0">
+            <a-camera look-controls wasd-controls>
+                <!-- Regular cursor with ring animation -->
+                <a-entity
+                    cursor="fuse: true; fuseTimeout: 2500"
+                    position="0 0 -1"
+                    geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.02"
+                    material="color: #9B4DCA; shader: flat"
+                    animation__click="property: scale; startEvents: click; easing: easeInCubic; dur: 150; from: 0.1 0.1 0.1; to: 1 1 1"
+                    animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; dur: 2500; from: 1 1 1; to: 0.1 0.1 0.1"
+                    animation__mouseleave="property: scale; startEvents: mouseleave; easing: easeInCubic; dur: 500; to: 1 1 1"
+                    raycaster="objects: .clickable">
+                    <!-- Progress ring
+                    <a-ring
+                        position="0 0 0"
+                        radius-inner="0.02"
+                        radius-outer="0.03"
+                        theta-start="0"
+                        theta-length="0"
+                        material="color: #FF6B1A; shader: flat; opacity: 0.5"
+                        animation__fusing="property: theta-length; startEvents: fusing; easing: linear; dur: 2500; from: 0; to: 360"
+                        animation__mouseleave="property: theta-length; startEvents: mouseleave; to: 0; dur: 1">
+                    </a-ring> -->
+                </a-entity>
             </a-camera>
         </a-entity>
     </a-scene>

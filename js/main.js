@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
-    gameManager.init();
-    // document.querySelector('a-scene').addEventListener('click', shootSphere);
+    const scene = document.querySelector('a-scene');
+    
+    if (scene.hasLoaded) {
+        gameManager.init();
+    } else {
+        scene.addEventListener('loaded', function() {
+            gameManager.init();
+        });
+    }
 });

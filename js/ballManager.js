@@ -8,22 +8,45 @@ const ballManager = {
     collisionThreshold: 0.5,
 
     spawnBall: function() {
+        if (!gameManager.isGameRunning) return;
+
         const balls = document.getElementById('balls');
         const ball = document.createElement('a-sphere');
-        ball.setAttribute('position', `${Math.random() * 10 - 5} ${Math.random() * 5 + 1} ${Math.random() * -5 - 3}`);
-        ball.setAttribute('radius', '0.5');
-        ball.setAttribute('color', '#EF2D5E');
-        ball.setAttribute('dynamic-body', '');
-        ball.classList.add('ball');
+        
+        // Random position within bounds
+        const x = Math.random() * 10 - 5;
+        const y = Math.random() * 3 + 1;
+        const z = Math.random() * -5 - 3;
+        
+        ball.setAttribute('position', `${x} ${y} ${z}`);
+        ball.setAttribute('radius', '0.25');
+        ball.setAttribute('class', 'ball');
+        ball.setAttribute('dynamic-body', {
+            mass: 1,
+            linearDamping: 0.01,
+            angularDamping: 0.01
+        });
+
+        // Random color selection
+        const colors = ['#EF2D5E', '#FF9F1C', '#2ECC71', '#3498DB'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        ball.setAttribute('color', randomColor);
+
         balls.appendChild(ball);
 
-        this.currentSpawnInterval = Math.max(this.minSpawnInterval, this.currentSpawnInterval - this.spawnIntervalDecrease);
+        // Schedule next spawn with decreased interval
+        this.currentSpawnInterval = Math.max(
+            this.minSpawnInterval, 
+            this.currentSpawnInterval - this.spawnIntervalDecrease
+        );
         this.scheduleNextSpawn();
     },
 
     scheduleNextSpawn: function() {
         clearTimeout(this.spawnTimer);
-        this.spawnTimer = setTimeout(() => this.spawnBall(), this.currentSpawnInterval);
+        if (gameManager.isGameRunning) {
+            this.spawnTimer = setTimeout(() => this.spawnBall(), this.currentSpawnInterval);
+        }
     },
 
     startSpawning: function() {
@@ -33,38 +56,63 @@ const ballManager = {
 
     stopSpawning: function() {
         clearTimeout(this.spawnTimer);
-    },
-
-    updateBallPositions: function() {
+        // Clean up existing balls
         const balls = document.querySelectorAll('.ball');
-        const player = document.getElementById('player');
-        const playerPos = new THREE.Vector3().setFromMatrixPosition(player.object3D.matrixWorld);
-
         balls.forEach(ball => {
-            const ballPos = new THREE.Vector3().setFromMatrixPosition(ball.object3D.matrixWorld);
-            const direction = new THREE.Vector3().subVectors(playerPos, ballPos).normalize();
-            ball.object3D.position.add(direction.multiplyScalar(this.ballSpeed));
-
-            // Check for collision
-            const distance = ballPos.distanceTo(playerPos);
-            if (distance < this.collisionThreshold) {
-                this.handleCollision();
+            if (ball.parentNode) {
+                ball.parentNode.removeChild(ball);
             }
         });
     },
 
-    handleCollision: function() {
-        this.stopSpawning();
+    updateBallPositions: function() {
+        if (!gameManager.isGameRunning) return;
+
+        const balls = document.querySelectorAll('.ball');
+        const camera = document.querySelector('[camera]');
+        const cameraPos = new THREE.Vector3();
+        camera.object3D.getWorldPosition(cameraPos);
+
+        balls.forEach(ball => {
+            const ballPos = new THREE.Vector3();
+            ball.object3D.getWorldPosition(ballPos);
+            
+            // Calculate direction towards player
+            const direction = new THREE.Vector3()
+                .subVectors(cameraPos, ballPos)
+                .normalize()
+                .multiplyScalar(this.ballSpeed);
+
+            // Update ball position
+            const currentPosition = ball.getAttribute('position');
+            ball.setAttribute('position', {
+                x: currentPosition.x + direction.x,
+                y: currentPosition.y + direction.y,
+                z: currentPosition.z + direction.z
+            });
+
+            // Check for collision with player
+            const distance = cameraPos.distanceTo(ballPos);
+            if (distance < this.collisionThreshold) {
+                gameManager.endGame("Game Over! A ball hit you!");
+            }
+        });
     }
 };
 
 AFRAME.registerComponent('ball-manager', {
     init: function() {
+        this.tick = AFRAME.utils.throttleTick(this.tick, 16, this); // ~60fps
         ballManager.startSpawning();
     },
+
     tick: function() {
         if (gameManager.isGameRunning) {
             ballManager.updateBallPositions();
         }
+    },
+
+    remove: function() {
+        ballManager.stopSpawning();
     }
 });

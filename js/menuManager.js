@@ -1,7 +1,4 @@
 const menuManager = {
-    startMenu: null,
-    endMenu: null,
-
     init: function() {
         this.createStartMenu();
         this.createEndMenu();
@@ -9,87 +6,78 @@ const menuManager = {
     },
 
     createStartMenu: function() {
-        this.startMenu = document.createElement('a-entity');
-        this.startMenu.setAttribute('id', 'startMenu');
-        this.startMenu.setAttribute('position', '0 1.6 -4');
-
-        const startButton = document.createElement('a-gui-button');
-        startButton.setAttribute('width', '2.5');
-        startButton.setAttribute('height', '0.75');
-        startButton.setAttribute('value', 'Start Game');
-        startButton.setAttribute('font-size', '0.25');
-        startButton.setAttribute('margin', '0 0 0.2 0');
-        startButton.addEventListener('click', () => this.startGame());
-
-        this.startMenu.appendChild(startButton);
-        document.querySelector('a-scene').appendChild(this.startMenu);
+        const startMenu = document.createElement('a-entity');
+        startMenu.setAttribute('id', 'startMenu');
+        startMenu.setAttribute('position', '0 1.6 -4');
+        
+        startMenu.innerHTML = `
+            <a-text value="Sphere Shooter" align="center" position="0 0.5 0" scale="1.5 1.5 1.5"></a-text>
+            <a-entity
+                id="startButton"
+                class="clickable"
+                geometry="primitive: plane; width: 2; height: 0.7"
+                material="color: #4CAF50"
+                position="0 0 0"
+                animation__hover="property: material.color; startEvents: mouseenter; endEvents: mouseleave; from: #4CAF50; to: #45a049; dur: 200">
+                <a-text
+                    value="Start Game"
+                    align="center"
+                    position="0 0 0.01"
+                    scale="0.5 0.5 0.5"
+                    color="white">
+                </a-text>
+            </a-entity>
+        `;
+        
+        document.querySelector('#menuContainer').appendChild(startMenu);
+        
+        const startButton = startMenu.querySelector('#startButton');
+        startButton.addEventListener('click', () => gameManager.startGame());
     },
 
     createEndMenu: function() {
-        this.endMenu = document.createElement('a-entity');
-        this.endMenu.setAttribute('id', 'endMenu');
-        this.endMenu.setAttribute('position', '0 1.6 -4');
-        this.endMenu.setAttribute('visible', false);
-
-        const endMessage = document.createElement('a-gui-label');
-        endMessage.setAttribute('width', '4');
-        endMessage.setAttribute('height', '0.75');
-        endMessage.setAttribute('value', 'Game Over!');
-        endMessage.setAttribute('font-size', '0.35');
-        endMessage.setAttribute('position', '0 1 0');
-
-        const scoreMessage = document.createElement('a-gui-label');
-        scoreMessage.setAttribute('width', '4');
-        scoreMessage.setAttribute('height', '0.75');
-        scoreMessage.setAttribute('value', '');
-        scoreMessage.setAttribute('font-size', '0.25');
-        scoreMessage.setAttribute('position', '0 0 0');
-
-        const restartButton = document.createElement('a-gui-button');
-        restartButton.setAttribute('width', '2.5');
-        restartButton.setAttribute('height', '0.75');
-        restartButton.setAttribute('value', 'Restart Game');
-        restartButton.setAttribute('font-size', '0.25');
-        restartButton.setAttribute('position', '0 -1 0');
-        restartButton.addEventListener('click', () => this.restartGame());
-
-        this.endMenu.appendChild(endMessage);
-        this.endMenu.appendChild(scoreMessage);
-        this.endMenu.appendChild(restartButton);
-        document.querySelector('a-scene').appendChild(this.endMenu);
+        const endMenu = document.createElement('a-entity');
+        endMenu.setAttribute('id', 'endMenu');
+        endMenu.setAttribute('position', '0 1.6 -4');
+        endMenu.setAttribute('visible', false);
+        
+        endMenu.innerHTML = `
+            <a-text id="endMessage" value="" align="center" position="0 0.5 0"></a-text>
+            <a-gui-button
+                id="restartButton"
+                width="2"
+                height="0.7"
+                base-depth="0.025"
+                depth="0.1"
+                gap="0.1"
+                class="clickable"
+                value="Play Again"
+                font-size="0.3"
+                margin="0 0 0.2 0"
+                position="0 0 0">
+            </a-gui-button>
+        `;
+        
+        document.querySelector('#menuContainer').appendChild(endMenu);
+        
+        const restartButton = endMenu.querySelector('#restartButton');
+        restartButton.addEventListener('click', () => gameManager.restartGame());
     },
 
-    disableMenuInteractivity: function() {
-        const guiElements = document.querySelectorAll('[gui-interactable]');
-        guiElements.forEach(el => {
-            el.setAttribute('gui-interactable', 'enabled: false');
-        });
-    },
-
-    enableMenuInteractivity: function() {
-        const guiElements = document.querySelectorAll('[gui-interactable]');
-        guiElements.forEach(el => {
-            el.setAttribute('gui-interactable', 'enabled: true');
-        });
-    },
-
-    startGame: function() {
-        this.startMenu.setAttribute('visible', false);
-        this.disableMenuInteractivity();
-        gameManager.startGame();
-    },
-
-    restartGame: function() {
-        this.endMenu.setAttribute('visible', false);
-        this.disableMenuInteractivity();
-        gameManager.restartGame();
+    showStartMenu: function() {
+        document.querySelector('#startMenu').setAttribute('visible', true);
+        document.querySelector('#endMenu').setAttribute('visible', false);
     },
 
     showEndMenu: function(message) {
-        this.startMenu.setAttribute('visible', false);
-        this.endMenu.setAttribute('visible', true);
-        this.endMenu.querySelector('a-gui-label[value="Game Over!"]').setAttribute('value', 'Game Over!');
-        this.endMenu.querySelector('a-gui-label[value=""]').setAttribute('value', message);
-        this.enableMenuInteractivity();
+        document.querySelector('#startMenu').setAttribute('visible', false);
+        const endMenu = document.querySelector('#endMenu');
+        endMenu.setAttribute('visible', true);
+        endMenu.querySelector('#endMessage').setAttribute('value', message);
+    },
+
+    hideAllMenus: function() {
+        document.querySelector('#startMenu').setAttribute('visible', false);
+        document.querySelector('#endMenu').setAttribute('visible', false);
     }
 };

@@ -1,35 +1,81 @@
 window.shootSphere = function(event) {
     if (!gameManager.isGameRunning) return;
     
-    let camera = document.getElementById('player');
-    let raycaster = camera.components.raycaster;
-    let intersections = raycaster.intersections;
-
+    const camera = document.querySelector('[camera]');
+    
+    // Create raycaster for shooting
+    const raycaster = new THREE.Raycaster();
+    const direction = new THREE.Vector3();
+    camera.object3D.getWorldDirection(direction);
+    
+    const position = new THREE.Vector3();
+    camera.object3D.getWorldPosition(position);
+    
+    raycaster.set(position, direction);
+    
+    // Get all balls
+    const balls = Array.from(document.querySelectorAll('.ball'));
+    const ballObjects = balls.map(ball => {
+        return {
+            el: ball,
+            object3D: ball.object3D
+        };
+    });
+    
+    // Check for intersections
+    const intersections = raycaster.intersectObjects(
+        ballObjects.map(ball => ball.object3D),
+        true
+    );
+    
     if (intersections.length > 0) {
-        let hitBall = intersections[0].object.el;
-        if (hitBall.classList.contains('ball')) {
-            hitBall.parentNode.removeChild(hitBall);
+        // Find the corresponding element
+        const hitBall = ballObjects.find(ball => 
+            ball.object3D === intersections[0].object || 
+            ball.object3D.isAncestor(intersections[0].object)
+        );
+        
+        if (hitBall) {
+            hitBall.el.parentNode.removeChild(hitBall.el);
             gameManager.incrementHits();
+            return;
         }
     }
-
-    throwObject(camera);
+    
+    // If no direct hit, throw projectile
+    throwProjectile(camera);
 };
 
-function throwObject(camera) {
-    let direction = new THREE.Vector3();
+function throwProjectile(camera) {
+    const direction = new THREE.Vector3();
     camera.object3D.getWorldDirection(direction);
-
-    let throwable = document.createElement('a-box');
-    throwable.setAttribute('position', camera.getAttribute('position'));
-    throwable.setAttribute('depth', '0.1');
-    throwable.setAttribute('height', '0.1');
-    throwable.setAttribute('width', '0.1');
-    throwable.setAttribute('color', '#FF0000');
-    throwable.setAttribute('dynamic-body', '');
-
-    direction.multiplyScalar(-10);
-    throwable.setAttribute('velocity', `${direction.x} ${direction.y} ${direction.z}`);
-
-    document.querySelector('a-scene').appendChild(throwable);
+    
+    const position = new THREE.Vector3();
+    camera.object3D.getWorldPosition(position);
+    
+    const projectile = document.createElement('a-sphere');
+    projectile.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+    projectile.setAttribute('radius', '0.1');
+    projectile.setAttribute('color', '#FF0000');
+    projectile.setAttribute('class', 'projectile');
+    
+    // Add physics body
+    projectile.setAttribute('dynamic-body', {
+        mass: 0.1,
+        linearDamping: 0.01,
+        angularDamping: 0.01
+    });
+    
+    // Apply velocity in shooting direction
+    direction.multiplyScalar(15);
+    projectile.setAttribute('velocity', `${direction.x} ${direction.y} ${direction.z}`);
+    
+    // Remove projectile after 3 seconds
+    setTimeout(() => {
+        if (projectile.parentNode) {
+            projectile.parentNode.removeChild(projectile);
+        }
+    }, 3000);
+    
+    document.querySelector('a-scene').appendChild(projectile);
 }
