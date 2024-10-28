@@ -1,6 +1,7 @@
 const gameManager = {
     isGameRunning: false,
     startTime: null,
+    hits: 0,
 
     init: function() {
         menuManager.init();
@@ -9,12 +10,26 @@ const gameManager = {
     startGame: function() {
         this.isGameRunning = true;
         this.startTime = Date.now();
+        this.hits = 0;
         menuManager.hideAllMenus();
         
-        // End the game after 10 seconds for testing
-        setTimeout(() => {
-            this.endGame("Time's up!");
-        }, 10000);
+        // Clear any existing balls
+        const ballsContainer = document.getElementById('balls');
+        while (ballsContainer.firstChild) {
+            ballsContainer.removeChild(ballsContainer.firstChild);
+        }
+        
+        // Initialize ball manager
+        const ballManagerEntity = document.createElement('a-entity');
+        ballManagerEntity.setAttribute('ball-manager', '');
+        document.querySelector('a-scene').appendChild(ballManagerEntity);
+        
+        // Spawn first ball immediately
+        ballManager.spawnBall();
+    },
+
+    incrementHits: function() {
+        this.hits++;
     },
 
     endGame: function(message) {
@@ -22,8 +37,14 @@ const gameManager = {
         
         this.isGameRunning = false;
         const timePlayed = Math.floor((Date.now() - this.startTime) / 1000);
-        const endMessage = `${message}\nYou played for ${timePlayed} seconds!`;
+        const endMessage = `${message}\nYou destroyed ${this.hits} balls in ${timePlayed} seconds!`;
         menuManager.showEndMenu(endMessage);
+        
+        // Clean up
+        const ballManagerEntity = document.querySelector('[ball-manager]');
+        if (ballManagerEntity) {
+            ballManagerEntity.parentNode.removeChild(ballManagerEntity);
+        }
     },
 
     restartGame: function() {

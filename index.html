@@ -6,6 +6,10 @@
     <title>Design Sprint 3</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://rawgit.com/rdub80/aframe-gui/master/dist/aframe-gui.min.js"></script>
+    <script src="https://unpkg.com/aframe-particle-system-component@1.0.x/dist/aframe-particle-system-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-line-component@1.0.0/dist/aframe-line-component.min.js"></script>
+    <script src="js/laserSystem.js"></script>
+    <script src="js/ballManager.js"></script>
     <script src="js/menuManager.js"></script>
     <script src="js/gameManager.js"></script>
     <script src="js/main.js"></script>
@@ -35,28 +39,51 @@
         <!-- Lighting -->
         <!-- Ambient light for base illumination -->
         <a-light type="ambient" color="#2D1B3E" intensity="0.5"></a-light>
-        
-        <!-- Main purple ceiling lights -->
-        <a-light type="point" position="0 2.8 -5" rotation="-90 0 0" 
-                intensity="1" distance="15" angle="60" penumbra="0.4"
+
+        <!-- Front Lights -->
+        <!-- Main purple ceiling light -->
+        <a-light type="point" position="0 2.8 -5" 
+                intensity="1" distance="15"
                 color="#9B4DCA" shadow="cast: true"></a-light>
-        
-        <!-- Orange accent lights -->
-        <a-light type="point" position="-5 2 -5" intensity="0.8" distance="8" 
+
+        <!-- Front orange accent lights -->
+        <a-light type="point" position="-5 2 -5" 
+                intensity="0.8" distance="8" 
                 color="#FF6B1A" shadow="cast: true"></a-light>
-        <a-light type="point" position="5 2 -5" intensity="0.8" distance="8" 
+        <a-light type="point" position="5 2 -5" 
+                intensity="0.8" distance="8" 
+                color="#FF6B1A" shadow="cast: true"></a-light>
+
+        <!-- Back Lights (mirrored) -->
+        <!-- Back purple ceiling light -->
+        <a-light type="point" position="0 2.8 2" 
+                intensity="0.8" distance="15"
+                color="#9B4DCA" shadow="cast: true"></a-light>
+
+        <!-- Back orange accent lights -->
+        <a-light type="point" position="-5 2 2" 
+                intensity="0.6" distance="8" 
+                color="#FF6B1A" shadow="cast: true"></a-light>
+        <a-light type="point" position="5 2 2" 
+                intensity="0.6" distance="8" 
                 color="#FF6B1A" shadow="cast: true"></a-light>
         
 
         <!-- Environment -->
         <a-sky color="#1A1A1A"></a-sky>
+
+        <a-entity id="balls"></a-entity>
         
         <!-- Menus will be added here by menuManager -->
         <a-entity id="menuContainer"></a-entity>
 
         <!-- Camera -->
         <a-entity position="0 0 0">
-            <a-camera look-controls wasd-controls>
+            <a-camera
+                look-controls
+                wasd-controls
+                laser-system
+                raycaster="objects: .ball">
                 <!-- Regular cursor with ring animation -->
                 <a-entity
                     cursor="fuse: true; fuseTimeout: 2500"
@@ -67,17 +94,6 @@
                     animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; dur: 2500; from: 1 1 1; to: 0.1 0.1 0.1"
                     animation__mouseleave="property: scale; startEvents: mouseleave; easing: easeInCubic; dur: 500; to: 1 1 1"
                     raycaster="objects: .clickable">
-                    <!-- Progress ring
-                    <a-ring
-                        position="0 0 0"
-                        radius-inner="0.02"
-                        radius-outer="0.03"
-                        theta-start="0"
-                        theta-length="0"
-                        material="color: #FF6B1A; shader: flat; opacity: 0.5"
-                        animation__fusing="property: theta-length; startEvents: fusing; easing: linear; dur: 2500; from: 0; to: 360"
-                        animation__mouseleave="property: theta-length; startEvents: mouseleave; to: 0; dur: 1">
-                    </a-ring> -->
                 </a-entity>
             </a-camera>
         </a-entity>

@@ -65,19 +65,36 @@ const menuManager = {
     },
 
     showStartMenu: function() {
-        document.querySelector('#startMenu').setAttribute('visible', true);
-        document.querySelector('#endMenu').setAttribute('visible', false);
+        const startMenu = document.querySelector('#startMenu');
+        const endMenu = document.querySelector('#endMenu');
+        
+        startMenu.setAttribute('visible', true);
+        startMenu.querySelector('#startButton').classList.add('clickable');
+        
+        endMenu.setAttribute('visible', false);
+        endMenu.querySelector('#restartButton').classList.remove('clickable');
     },
 
     showEndMenu: function(message) {
-        document.querySelector('#startMenu').setAttribute('visible', false);
+        const startMenu = document.querySelector('#startMenu');
         const endMenu = document.querySelector('#endMenu');
+        
+        startMenu.setAttribute('visible', false);
+        startMenu.querySelector('#startButton').classList.remove('clickable');
+        
         endMenu.setAttribute('visible', true);
+        endMenu.querySelector('#restartButton').classList.add('clickable');
         endMenu.querySelector('#endMessage').setAttribute('value', message);
     },
 
     hideAllMenus: function() {
-        document.querySelector('#startMenu').setAttribute('visible', false);
-        document.querySelector('#endMenu').setAttribute('visible', false);
+        const startMenu = document.querySelector('#startMenu');
+        const endMenu = document.querySelector('#endMenu');
+        
+        startMenu.setAttribute('visible', false);
+        startMenu.querySelector('#startButton').classList.remove('clickable');
+        
+        endMenu.setAttribute('visible', false);
+        endMenu.querySelector('#restartButton').classList.remove('clickable');
     }
 };

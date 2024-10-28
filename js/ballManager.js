@@ -9,37 +9,85 @@ const ballManager = {
 
     spawnBall: function() {
         if (!gameManager.isGameRunning) return;
-
-        const balls = document.getElementById('balls');
-        const ball = document.createElement('a-sphere');
-        
-        // Random position within bounds
+    
+        const ballsContainer = document.getElementById('balls');
+        if (!ballsContainer) {
+            console.error('Balls container not found!');
+            return;
+        }
+    
+        // Create a container for the ball and its health bar
+        const ballEntity = document.createElement('a-entity');
         const x = Math.random() * 10 - 5;
         const y = Math.random() * 3 + 1;
         const z = Math.random() * -5 - 3;
+        ballEntity.setAttribute('position', `${x} ${y} ${z}`);
         
-        ball.setAttribute('position', `${x} ${y} ${z}`);
+        const ball = document.createElement('a-sphere');
+        ball.setAttribute('position', '0 0 0');
         ball.setAttribute('radius', '0.25');
         ball.setAttribute('class', 'ball');
-        ball.setAttribute('dynamic-body', {
-            mass: 1,
-            linearDamping: 0.01,
-            angularDamping: 0.01
-        });
-
-        // Random color selection
-        const colors = ['#EF2D5E', '#FF9F1C', '#2ECC71', '#3498DB'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        ball.setAttribute('color', randomColor);
-
-        balls.appendChild(ball);
-
-        // Schedule next spawn with decreased interval
+        ball.setAttribute('data-health', 100);
+        ball.setAttribute('color', '#FF6B1A');
+        
+        // Create health bar background (gray background)
+        const healthBarBg = document.createElement('a-plane');
+        healthBarBg.setAttribute('position', '0 0.5 0');
+        healthBarBg.setAttribute('width', '0.5');
+        healthBarBg.setAttribute('height', '0.1');
+        healthBarBg.setAttribute('color', '#333333');
+        
+        // Create health bar foreground (green bar)
+        const healthBarFg = document.createElement('a-plane');
+        healthBarFg.setAttribute('position', '0 0 0.001');
+        healthBarFg.setAttribute('width', '0.5');
+        healthBarFg.setAttribute('height', '0.1');
+        healthBarFg.setAttribute('color', '#00ff00');
+        healthBarFg.setAttribute('class', 'health-bar');
+        
+        // Create damage bar (red bar)
+        const damageBar = document.createElement('a-plane');
+        damageBar.setAttribute('position', '0 0 0.0005');
+        damageBar.setAttribute('width', '0');
+        damageBar.setAttribute('height', '0.1');
+        damageBar.setAttribute('color', '#ff0000');
+        damageBar.setAttribute('class', 'damage-bar');
+    
+        // Add look-at component to health bar container
+        healthBarBg.setAttribute('look-at', '[camera]');
+        
+        // Assemble the health bar
+        healthBarBg.appendChild(healthBarFg);
+        healthBarBg.appendChild(damageBar);
+        
+        // Assemble the ball entity
+        ballEntity.appendChild(ball);
+        ballEntity.appendChild(healthBarBg);
+        
+        ballsContainer.appendChild(ballEntity);
+    
         this.currentSpawnInterval = Math.max(
             this.minSpawnInterval, 
             this.currentSpawnInterval - this.spawnIntervalDecrease
         );
         this.scheduleNextSpawn();
+    },
+    
+    updateBallHealth: function(ball, health) {
+        const healthPercent = health / 100;
+        const healthBarBg = ball.parentNode.querySelector('a-plane');
+        const healthBar = healthBarBg.querySelector('.health-bar');
+        const damageBar = healthBarBg.querySelector('.damage-bar');
+        
+        if (healthBar && damageBar) {
+            // Update health bar width and position
+            healthBar.setAttribute('width', 0.5 * healthPercent);
+            healthBar.setAttribute('position', `${-0.25 + (0.25 * healthPercent)} 0 0.001`);
+            
+            // Update damage bar width and position
+            damageBar.setAttribute('width', 0.5 * (1 - healthPercent));
+            damageBar.setAttribute('position', `${0.25 * healthPercent} 0 0.0005`);
+        }
     },
 
     scheduleNextSpawn: function() {
@@ -50,17 +98,20 @@ const ballManager = {
     },
 
     startSpawning: function() {
+        console.log('Starting ball spawning');
         this.currentSpawnInterval = this.initialSpawnInterval;
-        this.scheduleNextSpawn();
+        this.spawnBall(); // Spawn first ball immediately
+        this.scheduleNextSpawn(); // Schedule next spawn
     },
 
     stopSpawning: function() {
         clearTimeout(this.spawnTimer);
-        // Clean up existing balls
+        // Clean up existing ball entities
         const balls = document.querySelectorAll('.ball');
         balls.forEach(ball => {
-            if (ball.parentNode) {
-                ball.parentNode.removeChild(ball);
+            const ballEntity = ball.parentNode;
+            if (ballEntity && ballEntity.parentNode) {
+                ballEntity.parentNode.removeChild(ballEntity);
             }
         });
     },
@@ -74,8 +125,10 @@ const ballManager = {
         camera.object3D.getWorldPosition(cameraPos);
 
         balls.forEach(ball => {
+            // Get the parent entity that contains both ball and health bar
+            const ballEntity = ball.parentNode;
             const ballPos = new THREE.Vector3();
-            ball.object3D.getWorldPosition(ballPos);
+            ballEntity.object3D.getWorldPosition(ballPos);
             
             // Calculate direction towards player
             const direction = new THREE.Vector3()
@@ -83,9 +136,9 @@ const ballManager = {
                 .normalize()
                 .multiplyScalar(this.ballSpeed);
 
-            // Update ball position
-            const currentPosition = ball.getAttribute('position');
-            ball.setAttribute('position', {
+            // Update ball entity position
+            const currentPosition = ballEntity.getAttribute('position');
+            ballEntity.setAttribute('position', {
                 x: currentPosition.x + direction.x,
                 y: currentPosition.y + direction.y,
                 z: currentPosition.z + direction.z
@@ -99,6 +152,7 @@ const ballManager = {
         });
     }
 };
+
 
 AFRAME.registerComponent('ball-manager', {
     init: function() {
