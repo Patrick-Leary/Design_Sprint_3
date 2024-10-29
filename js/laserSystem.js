@@ -25,11 +25,6 @@ AFRAME.registerComponent('laser-system', {
         const endPoint = new THREE.Vector3()
             .copy(direction)
             .multiplyScalar(50);
-            
-        this.laser.setAttribute('line', {
-            start: '0 0 0',
-            end: `${endPoint.x} ${endPoint.y} ${endPoint.z}`
-        });
 
         // Check for ball hits
         const intersections = raycasterComponent.intersections;
@@ -72,59 +67,137 @@ AFRAME.registerComponent('laser-system', {
         const ballEntity = ball.parentNode;
         const pos = ballEntity.getAttribute('position');
     
-        // Create multiple small spheres for explosion effect instead of using particle system
-        const particleCount = 10;
-        const particles = document.createElement('a-entity');
-        particles.setAttribute('position', pos);
+        // Create explosion container
+        const explosionContainer = document.createElement('a-entity');
+        explosionContainer.setAttribute('position', pos);
     
+        // Create main explosion sphere
+        const mainSphere = document.createElement('a-sphere');
+        mainSphere.setAttribute('radius', '0.1');
+        mainSphere.setAttribute('color', '#00ff00');
+        mainSphere.setAttribute('material', {
+            emissive: '#00ff00',
+            emissiveIntensity: 2,
+            opacity: 0.8,
+            transparent: true
+        });
+        
+        // Animate main sphere
+        mainSphere.setAttribute('animation__scale', {
+            property: 'scale',
+            from: '1 1 1',
+            to: '3 3 3',
+            dur: 500,
+            easing: 'easeOutQuad'
+        });
+        mainSphere.setAttribute('animation__fade', {
+            property: 'material.opacity',
+            from: '0.8',
+            to: '0',
+            dur: 500,
+            easing: 'easeOutQuad'
+        });
+    
+        // Add central light
+        const centerLight = document.createElement('a-entity');
+        centerLight.setAttribute('light', {
+            type: 'point',
+            color: '#00ff00',
+            intensity: 2,
+            distance: 3
+        });
+        centerLight.setAttribute('animation__intensity', {
+            property: 'light.intensity',
+            from: '2',
+            to: '0',
+            dur: 500,
+            easing: 'easeOutQuad'
+        });
+    
+        // Create random particles
+        const particleCount = 12; // Reduced particle count
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('a-sphere');
             
-            // Random direction for particle
-            const angle = (Math.random() * Math.PI * 2);
-            const upwardBias = Math.random() * 0.5 + 0.5; // Bias upward
-            const speed = Math.random() * 0.1 + 0.05;
+            // Random direction in 3D space
+            const theta = Math.random() * Math.PI * 2; // Horizontal angle
+            const phi = Math.random() * Math.PI; // Vertical angle
+            const speed = 0.5 + Math.random() * 1.5; // Random speed
             
-            particle.setAttribute('radius', '0.05');
-            particle.setAttribute('color', '#FF6B1A');
+            // Convert spherical coordinates to Cartesian
+            const x = Math.sin(phi) * Math.cos(theta);
+            const y = Math.sin(phi) * Math.sin(theta);
+            const z = Math.cos(phi);
+            
+            // Random size variation
+            const scale = 0.5 + Math.random() * 0.5;
+            
+            particle.setAttribute('radius', '0.08');
+            particle.setAttribute('color', '#00ff00');
+            particle.setAttribute('material', {
+                emissive: '#00ff00',
+                emissiveIntensity: 1,
+                opacity: 0.8,
+                transparent: true
+            });
             particle.setAttribute('position', '0 0 0');
             
-            // Add animation for particle movement
-            particle.setAttribute('animation', {
+            // Animate particles with random trajectories
+            particle.setAttribute('animation__move', {
                 property: 'position',
-                dur: 500,
-                easing: 'easeOutQuad',
-                to: `${Math.cos(angle) * speed} ${upwardBias * speed} ${Math.sin(angle) * speed}`
+                from: '0 0 0',
+                to: `${x * speed} ${y * speed} ${z * speed}`,
+                dur: 750 + Math.random() * 250, // Random duration
+                easing: 'easeOutCubic'
             });
             
-            // Add animation for fade out
-            particle.setAttribute('animation__fade', {
-                property: 'material.opacity',
-                dur: 500,
-                from: '1',
-                to: '0',
+            particle.setAttribute('animation__scale', {
+                property: 'scale',
+                from: `${scale} ${scale} ${scale}`,
+                to: '0.1 0.1 0.1',
+                dur: 750,
                 easing: 'easeOutQuad'
             });
-    
-            // Add light to particle
+            
+            particle.setAttribute('animation__fade', {
+                property: 'material.opacity',
+                from: '0.8',
+                to: '0',
+                dur: 750,
+                easing: 'easeOutQuad'
+            });
+            
+            // Add light to each particle
             const particleLight = document.createElement('a-entity');
             particleLight.setAttribute('light', {
                 type: 'point',
-                intensity: '0.2',
-                distance: '0.5',
-                color: '#FF6B1A'
+                color: '#00ff00',
+                intensity: 0.5,
+                distance: 1
             });
-            particle.appendChild(particleLight);
+            particleLight.setAttribute('animation__intensity', {
+                property: 'light.intensity',
+                from: '0.5',
+                to: '0',
+                dur: 750,
+                easing: 'easeOutQuad'
+            });
             
-            particles.appendChild(particle);
+            particle.appendChild(particleLight);
+            explosionContainer.appendChild(particle);
         }
     
-        document.querySelector('a-scene').appendChild(particles);
+        // Add main sphere and center light
+        explosionContainer.appendChild(mainSphere);
+        explosionContainer.appendChild(centerLight);
+        
+        // Add to scene
+        document.querySelector('a-scene').appendChild(explosionContainer);
         
         // Remove explosion after animation
         setTimeout(() => {
-            if (particles.parentNode) {
-                particles.parentNode.removeChild(particles);
+            if (explosionContainer.parentNode) {
+                explosionContainer.parentNode.removeChild(explosionContainer);
             }
         }, 1000);
     
