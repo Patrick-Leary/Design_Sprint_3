@@ -13,9 +13,35 @@
     <script src="js/menuManager.js"></script>
     <script src="js/gameManager.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/soundManager.js"></script>
 </head>
 <body>
     <a-scene shadow="type: pcfsoft">
+        <a-assets>
+            <audio id="menu-music" src="sounds/menuMusic.mp3" preload="auto"></audio>
+            <audio id="game-music" src="sounds/gameMusic.mp3" preload="auto"></audio>
+            <audio id="laser-hit" src="sounds/laserLong.wav" preload="auto"></audio>
+            <audio id="explosion" src="sounds/explode.wav" preload="auto"></audio>
+            <!-- <audio id="game-over" src="sounds/game-over.mp3" preload="auto"></audio> -->
+        </a-assets>
+        
+        <!-- Add two music players -->
+        <a-entity id="menu-music-player"
+            sound="src: #menu-music; 
+                   autoplay: true; 
+                   loop: true; 
+                   volume: 1;
+                   positional: false">
+        </a-entity>
+        
+        <a-entity id="game-music-player"
+            sound="src: #game-music; 
+                   autoplay: false; 
+                   loop: true; 
+                   volume: 0.3;
+                   positional: false">
+        </a-entity>
+
         <!-- Room Structure -->
         <!-- Walls (using planes) -->
         <!-- Front wall -->

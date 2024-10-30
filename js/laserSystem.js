@@ -4,7 +4,8 @@ AFRAME.registerComponent('laser-system', {
         this.camera = this.el;
         this.raycaster = this.el.components.raycaster;
         this.direction = new THREE.Vector3();
-        
+        this.isHittingBall = false;
+
         // Ensure raycaster is configured correctly
         if (this.raycaster) {
             this.raycaster.refreshObjects();
@@ -15,25 +16,47 @@ AFRAME.registerComponent('laser-system', {
 
     tick: function() {
         if (!gameManager.isGameRunning) return;
-
-        // Get direction from raycaster
+    
         const raycasterComponent = this.el.components.raycaster;
         if (!raycasterComponent) return;
-
-        // Update laser direction to match cursor
+    
         const direction = raycasterComponent.raycaster.ray.direction;
         const endPoint = new THREE.Vector3()
             .copy(direction)
             .multiplyScalar(50);
-
+    
         // Check for ball hits
         const intersections = raycasterComponent.intersections;
         if (intersections.length > 0) {
             const hitEl = intersections[0].object.el;
             if (hitEl && hitEl.classList.contains('ball')) {
+                if (!this.isHittingBall) {
+                    soundManager.playLaserHit();
+                    this.isHittingBall = true;
+                }
                 this.damageBall(hitEl);
             }
+        } else if (this.isHittingBall) {
+            soundManager.stopLaserHit();
+            this.isHittingBall = false;
         }
+    },
+    
+    damageBall: function(ball) {
+        let health = parseFloat(ball.getAttribute('data-health') || 100);
+        health -= 2;
+        ball.setAttribute('data-health', health);
+        
+        // Update health bar using ballManager
+        ballManager.updateBallHealth(ball, health);
+    
+        if (health <= 0) {
+            this.explodeBall(ball);
+        }
+    },
+    
+    remove: function() {
+        soundManager.stopLaserHit();
     },
 
     createLaser: function() {
@@ -54,6 +77,8 @@ AFRAME.registerComponent('laser-system', {
         let health = parseFloat(ball.getAttribute('data-health') || 100);
         health -= 2; // Damage per frame
         ball.setAttribute('data-health', health);
+
+        soundManager.playLaserHit();
         
         // Update health bar using ballManager
         ballManager.updateBallHealth(ball, health);
@@ -64,6 +89,7 @@ AFRAME.registerComponent('laser-system', {
     },
 
     explodeBall: function(ball) {
+        soundManager.playExplosion();
         const ballEntity = ball.parentNode;
         const pos = ballEntity.getAttribute('position');
     

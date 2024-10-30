@@ -12,6 +12,8 @@ const gameManager = {
         this.startTime = Date.now();
         this.hits = 0;
         menuManager.hideAllMenus();
+
+        soundManager.playGameMusic();
         
         // Clear any existing balls
         const ballsContainer = document.getElementById('balls');
@@ -36,6 +38,8 @@ const gameManager = {
         if (!this.isGameRunning) return;
         
         this.isGameRunning = false;
+        soundManager.stopLaserHit(); // Stop any playing laser sound
+        soundManager.playMenuMusic();
         const timePlayed = Math.floor((Date.now() - this.startTime) / 1000);
         const endMessage = `${message}\nYou destroyed ${this.hits} balls in ${timePlayed} seconds!`;
         menuManager.showEndMenu(endMessage);
