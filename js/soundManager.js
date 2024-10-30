@@ -76,5 +76,21 @@ const soundManager = {
         });
         
         document.querySelector('a-scene').appendChild(explosion);
+    },
+
+    playDeath: function() {
+        const death = document.createElement('a-entity');
+        death.setAttribute('sound', {
+            src: '#death',
+            volume: 0.2,
+            positional: false,
+            autoplay: true
+        });
+        
+        death.addEventListener('sound-ended', () => {
+            death.parentNode.removeChild(death);
+        });
+        
+        document.querySelector('a-scene').appendChild(death);
     }
 };

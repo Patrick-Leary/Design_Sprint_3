@@ -16,13 +16,13 @@
     <script src="js/soundManager.js"></script>
 </head>
 <body>
-    <a-scene shadow="type: pcfsoft">
+    <a-scene shadow="type: basic">
         <a-assets>
             <audio id="menu-music" src="sounds/menuMusic.mp3" preload="auto"></audio>
             <audio id="game-music" src="sounds/gameMusic.mp3" preload="auto"></audio>
             <audio id="laser-hit" src="sounds/laserLong.wav" preload="auto"></audio>
             <audio id="explosion" src="sounds/explode.wav" preload="auto"></audio>
-            <!-- <audio id="game-over" src="sounds/game-over.mp3" preload="auto"></audio> -->
+            <audio id="death" src="sounds/death.wav" preload="auto"></audio>
         </a-assets>
         
         <!-- Add two music players -->
@@ -45,22 +45,22 @@
         <!-- Room Structure -->
         <!-- Walls (using planes) -->
         <!-- Front wall -->
-        <a-plane shadow="receive: true" position="0 2.5 -10" width="20" height="5" color="#4A4A4A"></a-plane>
+        <a-plane shadow="receive: false" position="0 2.5 -10" width="20" height="5" color="#4A4A4A"></a-plane>
 
         <!-- Back wall -->
-        <a-plane shadow="receive: true" position="0 2.5 5" rotation="180 0 0" width="20" height="5" color="#4A4A4A"></a-plane>
+        <a-plane shadow="receive: false" position="0 2.5 5" rotation="180 0 0" width="20" height="5" color="#4A4A4A"></a-plane>
 
         <!-- Right wall -->
-        <a-plane shadow="receive: true" position="10 2.5 -2.5" rotation="0 -90 0" width="15" height="5" color="#4A4A4A"></a-plane>
+        <a-plane shadow="receive: false" position="10 2.5 -2.5" rotation="0 -90 0" width="15" height="5" color="#4A4A4A"></a-plane>
         
         <!-- Left wall -->
-        <a-plane shadow="receive: true" position="-10 2.5 -2.5" rotation="0 90 0" width="15" height="5" color="#4A4A4A"></a-plane>
+        <a-plane shadow="receive: false" position="-10 2.5 -2.5" rotation="0 90 0" width="15" height="5" color="#4A4A4A"></a-plane>
         
         <!-- Ceiling -->
-        <a-plane shadow="receive: true" position="0 5 -5" rotation="90 0 0" width="20" height="20" color="#363636"></a-plane>
+        <a-plane shadow="receive: false" position="0 5 -5" rotation="90 0 0" width="20" height="20" color="#363636"></a-plane>
         
         <!-- Floor -->
-        <a-plane shadow="receive: true" position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#2D2D2D"></a-plane>
+        <a-plane shadow="receive: false" position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#2D2D2D"></a-plane>
         
         <!-- Lighting -->
         <!-- Ambient light for base illumination -->

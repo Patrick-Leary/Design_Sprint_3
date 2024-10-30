@@ -38,6 +38,7 @@ const gameManager = {
         if (!this.isGameRunning) return;
         
         this.isGameRunning = false;
+        soundManager.playDeath();
         soundManager.stopLaserHit(); // Stop any playing laser sound
         soundManager.playMenuMusic();
         const timePlayed = Math.floor((Date.now() - this.startTime) / 1000);
