@@ -14,7 +14,7 @@ Sphere Shooter VR is an immersive virtual reality experience where players must 
 - Progressive difficulty scaling
 - Particle effect animations
 - Halloween-themed environment
-- Immersive audio feedback
+- Immersive audio
 - Cross-platform compatibility
 
 ## 🚀 Getting Started
@@ -40,7 +40,6 @@ Sphere Shooter VR is an immersive virtual reality experience where players must 
 Built with:
 - A-Frame 1.2.0 (WebVR Framework)
 - HTML/CSS/JavaScript
-- A-Frame Particle System
 
 ## 🎯 Features
 
@@ -48,7 +47,7 @@ Built with:
 - **Progressive Difficulty**: Increasing spawn rates challenge players
 - **Visual Feedback**: Health bars and explosion effects
 - **Performance Optimized**: Runs smoothly on mobile devices
-- **Accessibility**: No manual input required
+- **Accessibility**: No button presses required
 
 ## 📖 Development Process
 
